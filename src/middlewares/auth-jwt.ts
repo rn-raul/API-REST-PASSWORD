@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { env } from "../env";
 import { isTokenRevoked } from "../services/tokenBlackList";
+
 export async function authJwt(request: FastifyRequest, reply: FastifyReply) {
   try {
     const authHeader = request.headers["authorization"];

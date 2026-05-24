@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { knex } from "../database";
-import { authJwt } from "../middlewares/auth-jwt-";
+import { authJwt } from "../middlewares/auth-jwt";
 import {  z } from "zod";
 import { randomUUID } from "crypto";
 import { decrypt, encrypt } from "../utils/crypto";

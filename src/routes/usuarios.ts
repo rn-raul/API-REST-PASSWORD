@@ -5,8 +5,8 @@ import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import { randomUUID } from "crypto";
 import { env } from "../env";
-import {addToBlackList} from '../services/tokenBlackList';
-import { authJwt } from "../middlewares/auth-jwt-";
+import { addToBlackList } from "../services/tokenBlackList";
+import { authJwt } from "../middlewares/auth-jwt";
 export async function usuariosRoutes(app: FastifyInstance) {
   app.post("/register", async (request, reply) => {
     const createUserBody = zod.object({
