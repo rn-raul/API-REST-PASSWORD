@@ -26,7 +26,7 @@ export async function passwordsRoutes(app: FastifyInstance) {
     async (request, reply) => {
       const userId = request.user?.id;
       const createPasswordBody = z.object({
-        service: z.string(),
+        service: z.string().min(6),
         password: z.string(),
         notes: z.string().optional(),
       });

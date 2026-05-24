@@ -1,12 +1,12 @@
 import { FastifyInstance } from "fastify";
 import zod from "zod";
 import { knex } from "../database";
+import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import { randomUUID } from "crypto";
 import { env } from "../env";
 import {addToBlackList} from '../services/tokenBlackList';
 import { authJwt } from "../middlewares/auth-jwt-";
-import { decrypt, encrypt } from "../utils/crypto";
 export async function usuariosRoutes(app: FastifyInstance) {
   app.post("/register", async (request, reply) => {
     const createUserBody = zod.object({
@@ -24,7 +24,7 @@ export async function usuariosRoutes(app: FastifyInstance) {
         .status(400)
         .send({ message: "A senha deve conter no mínimo 6 caracteres" });
     }
-    const passwordHash = encrypt(password);
+    const passwordHash = await argon2.hash(password);
     await knex("users").insert({
       id: randomUUID(),
       nome,
@@ -40,7 +40,7 @@ export async function usuariosRoutes(app: FastifyInstance) {
     });
     const { email, password } = loginBody.parse(request.body);
     const user = await knex("users").where({ email }).first();
-    if (!user || !(decrypt(user.password_hash) === password)) {
+    if (!user || !(await argon2.verify(user.password_hash, password))) {
       return reply.status(400).send({ message: "Email ou senha inválidos" });
     }
     const expiresIn = 5 * 60; // 5 minutos
@@ -53,7 +53,7 @@ export async function usuariosRoutes(app: FastifyInstance) {
       expiresIn: expiresIn,
     });
   });
-  app.get("/logout", { preHandler: authJwt }, async (request, reply) => {
+  app.post("/logout", { preHandler: authJwt }, async (request, reply) => {
     const authHeader = request.headers.authorization;
     if (!authHeader) {
       return reply.status(401).send({ message: "Token não fornecido" });
