@@ -5,7 +5,8 @@ import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import { randomUUID } from "crypto";
 import { env } from "../env";
-
+import {addToBlackList} from '../services/tokenBlackList';
+import { authJwt } from "../middlewares/auth-jwt-";
 export async function usuariosRoutes(app: FastifyInstance) {
   app.post("/register", async (request, reply) => {
     const createUserBody = zod.object({
@@ -52,7 +53,13 @@ export async function usuariosRoutes(app: FastifyInstance) {
       expiresIn: expiresIn,
     });
   });
-  app.get("/logout", async (request, reply) => {
+  app.get("/logout", { preHandler: authJwt }, async (request, reply) => {
+    const authHeader = request.headers.authorization;
+    if (!authHeader) {
+      return reply.status(401).send({ message: "Token não fornecido" });
+    }
+    const token = authHeader.split(" ")[1];
+    await addToBlackList(token, request.user!.id);
     return reply.status(200).send({ message: "Logout realizado com sucesso" });
   });
 }

@@ -11,13 +11,19 @@ declare module "knex/types/tables" {
       updated_at: string;
     };
     passwords: {
-        id: string;
-        user_id: string;
-        service: string;
-        password_hash: string;
-        notes: string | null;
-        created_at: string;
-        updated_at: string;
+      id: string;
+      user_id: string;
+      service: string;
+      password_hash: string;
+      notes: string | null;
+      created_at: string;
+      updated_at: string;
+    };
+    revoked_tokens: {
+      id: string;
+      token: string;
+      user_id: string;
+      revoked_at: string;
     };
   }
 }

@@ -1,9 +1,10 @@
 import { FastifyInstance } from "fastify";
 import { knex } from "../database";
 import { authJwt } from "../middlewares/auth-jwt-";
-import { string, z } from "zod";
+import {  z } from "zod";
 import { randomUUID } from "crypto";
 import { decrypt, encrypt } from "../utils/crypto";
+
 export async function passwordsRoutes(app: FastifyInstance) {
   app.get("/passwords", { preHandler: authJwt }, async (request, reply) => {
     const userId = request.user?.id;
