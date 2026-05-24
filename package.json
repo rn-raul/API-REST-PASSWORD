@@ -7,8 +7,7 @@
     "dev": "tsx watch src/server.ts",
     "knex": "tsx ./node_modules/knex/bin/cli.js",
     "build": "tsup src -d build",
-    "start": "node dist/server.js",
-    "test": "vitest"
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "",
@@ -28,6 +27,7 @@
     "jsonwebtoken": "^9.0.3",
     "knex": "^3.2.10",
     "sqlite3": "^6.0.1",
+    "tsup": "^8.5.1",
     "tsx": "^4.22.3",
     "zod": "^4.4.3"
   }
