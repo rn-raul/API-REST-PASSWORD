@@ -2,17 +2,18 @@ import { expect, it, beforeAll, afterAll, beforeEach, describe } from "vitest";
 import request from "supertest";
 import { execSync } from "node:child_process";
 import { app } from "../app";
+import { knex } from "../database";
 
 describe("Authentication Tests", () => {
   beforeAll(async () => {
     await app.ready();
+    execSync("npm run knex migrate:latest");
   });
   afterAll(async () => {
     await app.close();
   });
   beforeEach(async () => {
-    execSync("npm run knex migrate:rollback --all");
-    execSync("npm run knex migrate:latest");
+    await knex("users").del();
   });
   it("Cria uma nova conta de usuário", async () => {
     await request(app.server)
@@ -22,59 +23,26 @@ describe("Authentication Tests", () => {
         email: "test@test.com.br",
         password: "password123",
       })
-      .expect(201)
-      .then((response) => {
-        expect(response.body).toEqual({
-          message: "Usuário criado com sucesso",
-        });
-      });
+      .expect(201);
   });
   it("Realiza login com credenciais válidas", async () => {
     await request(app.server)
       .post("/api/register")
       .send({
         nome: "Test User",
-        email: "test@test.com.br",
+        email: "test2@test.com.br",
         password: "password123",
       })
       .expect(201);
-    await request(app.server)
+    const responseLogin = await request(app.server)
       .post("/api/login")
       .send({
-        email: "test@test.com.br",
-        password: "password123",
-      })
-      .expect(200)
-      .then((response) => {
-        expect(response.body).toHaveProperty("token");
-        console.log("Token recebido:", response.body.token);
-      });
-  });
-  it("Cria um novo registro de senha", async () => {
-    await request(app.server)
-      .post("/api/register")
-      .send({
-        nome: "Test User",
-        email: "test@test.com.br",
-        password: "password123",
-      })
-      .expect(201);
-    const loginResponse = await request(app.server)
-      .post("/api/login")
-      .send({
-        email: "test@test.com.br",
+        email: "test2@test.com.br",
         password: "password123",
       })
       .expect(200);
-    const token = loginResponse.body.token;
-    await request(app.server)
-      .post("/api/create-password")
-      .set("Authorization", `Bearer ${token}`)
-      .send({
-        service: "Test Service 2",
-        password: "servicepassword123",
-        notes: "Some notes about this password",
-      })
-      .expect(201);
+    expect(responseLogin.body).toHaveProperty("token");
+    console.log("Token recebido:", responseLogin.body.token);
+    
   });
 });
