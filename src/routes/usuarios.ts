@@ -3,10 +3,10 @@ import zod from "zod";
 import { knex } from "../database";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
-import { randomUUID } from "crypto";
 import { env } from "../env";
 import { addToBlackList } from "../services/tokenBlackList";
 import { authJwt } from "../middlewares/auth-jwt";
+import { registerUseCase } from "../use-cases/register";
 export async function usuariosRoutes(app: FastifyInstance) {
   app.post("/register", async (request, reply) => {
     const createUserBody = zod.object({
@@ -15,22 +15,11 @@ export async function usuariosRoutes(app: FastifyInstance) {
       password: zod.string(),
     });
     const { nome, email, password } = createUserBody.parse(request.body);
-    const userByEmail = await knex("users").where({ email }).first();
-    if (userByEmail) {
-      return reply.status(400).send({ message: "Email já cadastrado" });
+    try {
+        await registerUseCase({ nome, email, password });
+    } catch (error) {
+      return reply.status(409).send()
     }
-    if (password.length < 6) {
-      return reply
-        .status(400)
-        .send({ message: "A senha deve conter no mínimo 6 caracteres" });
-    }
-    const passwordHash = await argon2.hash(password);
-    await knex("users").insert({
-      id: randomUUID(),
-      nome,
-      email,
-      password_hash: passwordHash,
-    });
     return reply.status(201).send({ message: "Usuário criado com sucesso" });
   });
   app.post("/login", async (request, reply) => {
@@ -48,7 +37,6 @@ export async function usuariosRoutes(app: FastifyInstance) {
       expiresIn: expiresIn,
     });
     return reply.status(200).send({
-      message: "Login realizado com sucesso",
       token: token,
       expiresIn: expiresIn,
     });
