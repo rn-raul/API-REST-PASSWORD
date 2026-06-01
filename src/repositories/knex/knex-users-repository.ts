@@ -1,8 +1,8 @@
 import { randomUUID } from "crypto";
-import { knex } from "../database";
+import { knex } from "../../database";
+import { UsersRepository } from "../users-repository";
 
-
-export class KnexUsersRepository {
+export class KnexUsersRepository implements UsersRepository {
     async findByEmail(email: string) {
         const userByEmail = await knex("users").where({ email }).first();
         return userByEmail;
