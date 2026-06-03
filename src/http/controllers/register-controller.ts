@@ -1,9 +1,8 @@
 import zod from "zod";
 import { FastifyReply, FastifyRequest } from "fastify";
-import { RegisterUseCase } from "../../use-cases/register";
-import { KnexUsersRepository } from "../../repositories/knex/knex-users-repository";
 import { UserAlreadyExistsError } from "../../use-cases/errors/user-already-exists";
 import { PasswordMinError } from "../../use-cases/errors/password-min-error";
+import { makeRegisterUseCase } from "../../use-cases/factories/make-register-use-case-";
 
 export async function register(request: FastifyRequest, reply: FastifyReply) {
     const createUserBody = zod.object({
@@ -13,8 +12,7 @@ export async function register(request: FastifyRequest, reply: FastifyReply) {
     });
     const { nome, email, password } = createUserBody.parse(request.body);
     try {
-        const usersRepository = new KnexUsersRepository();
-        const registerUseCase = new RegisterUseCase(usersRepository);
+        const registerUseCase = makeRegisterUseCase();
         await registerUseCase.execute({ nome, email, password });
     } catch (error) {
         if (error instanceof UserAlreadyExistsError) {

@@ -1,8 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import zod from "zod";
-import { Authenticate } from "../../use-cases/authenticate";
-import { KnexUsersRepository } from "../../repositories/knex/knex-users-repository";
 import { AuthenticationError } from "../../use-cases/errors/authentication-errors";
+import { makeAuthenticateUseCase } from "../../use-cases/factories/make-authenticate-use-case";
 
 export async function authenticate(request: FastifyRequest, reply: FastifyReply) {
     const loginBody = zod.object({
@@ -11,8 +10,7 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
     });
     const { email, password } = loginBody.parse(request.body);
     try {
-        const usersRepository = new KnexUsersRepository();
-        const authenticateUseCase = new Authenticate(usersRepository);
+        const authenticateUseCase = makeAuthenticateUseCase();
         const { token, expiresIn } = await authenticateUseCase.execute({ email, password });
         return reply.status(200).send({
             message: "Autenticação realizada com sucesso",

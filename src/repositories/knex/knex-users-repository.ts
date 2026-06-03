@@ -8,10 +8,10 @@ export class KnexUsersRepository implements UsersRepository {
         return userByEmail;
     }
     async create(data: { nome: string; email: string; password_hash: string }) {
-        const user = await knex("users").insert({
+        const [user] = await knex("users").insert({
             id: randomUUID(),
             ...data
-        });
+        }).returning("*");
         return user;
     }
 }
