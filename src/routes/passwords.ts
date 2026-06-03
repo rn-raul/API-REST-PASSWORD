@@ -2,51 +2,9 @@ import { FastifyInstance } from "fastify";
 import { knex } from "../database";
 import { authJwt } from "../middlewares/auth-jwt";
 import {  z } from "zod";
-import { randomUUID } from "crypto";
 import { decrypt, encrypt } from "../utils/crypto";
 
 export async function passwordsRoutes(app: FastifyInstance) {
-  app.get("/passwords", { preHandler: authJwt }, async (request, reply) => {
-    const userId = request.user?.id;
-    const passwords = await knex("passwords").where({
-      user_id: userId,
-    });
-    return reply.send({
-      passwords: passwords.map((p) => ({
-        id: p.id,
-        service: p.service,
-        password_hash: decrypt(p.password_hash),
-        notes: p.notes,
-      })),
-    });
-  });
-  app.post(
-    "/create-password",
-    { preHandler: authJwt },
-    async (request, reply) => {
-      const userId = request.user?.id;
-      const createPasswordBody = z.object({
-        service: z.string().min(6),
-        password: z.string(),
-        notes: z.string().optional(),
-      });
-      const { service, password, notes } = createPasswordBody.parse(
-        request.body,
-      );
-      const user = await knex("users").where({ id: userId }).first();
-      if (!user) {
-        return reply.status(404).send({ message: "Usuário não encontrado" });
-      }
-      await knex("passwords").insert({
-        id: randomUUID(),
-        user_id: userId,
-        service,
-        password_hash: encrypt(password),
-        notes,
-      });
-      return reply.status(201).send({ message: "Senha criada com sucesso" });
-    },
-  );
   app.put("/password/:id", { preHandler: authJwt }, async (request, reply) => {
     const paramSchema = z.object({
       id: z.string(),

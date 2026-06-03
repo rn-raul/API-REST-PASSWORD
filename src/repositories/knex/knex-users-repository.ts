@@ -7,6 +7,10 @@ export class KnexUsersRepository implements UsersRepository {
         const userByEmail = await knex("users").where({ email }).first();
         return userByEmail;
     }
+    async findById(id: string) {
+        const userById = await knex("users").where({ id }).first();
+        return userById;
+    }
     async create(data: { nome: string; email: string; password_hash: string }) {
         const [user] = await knex("users").insert({
             id: randomUUID(),
