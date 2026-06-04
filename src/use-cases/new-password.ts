@@ -1,4 +1,4 @@
-import { NewPasswordRepository } from "../repositories/new-password-repository";
+import { PasswordsRepository } from "../repositories/passwords-repository";
 import { UsersRepository } from "../repositories/users-repository";
 import { encrypt } from "../utils/crypto";
 type NewPasswordUseCaseRequest = {
@@ -8,7 +8,7 @@ type NewPasswordUseCaseRequest = {
     notes?: string;
 }
 export class NewPasswordUseCase {
-    constructor(private newPasswordRepository: NewPasswordRepository, private usersRepository: UsersRepository) { }
+    constructor(private passwordRepository: PasswordsRepository, private usersRepository: UsersRepository) { }
     async execute({
         userId,
         service,
@@ -20,7 +20,7 @@ export class NewPasswordUseCase {
             throw new Error("User not found");
         }
         const passwordHash = encrypt(password)
-        await this.newPasswordRepository.create({
+        await this.passwordRepository.create({
             user_id: userId,
             service,
             password_hash: passwordHash,

@@ -1,13 +1,40 @@
 import { Tables } from "knex/types/tables";
-import { NewPasswordRepository } from "../new-password-repository";
+import { PasswordsRepository } from "../passwords-repository";
 import { knex } from "../../database";
 
-export class KnexPasswordRepository implements NewPasswordRepository {
+export class KnexPasswordsRepository implements PasswordsRepository {
+    async update(id: string, userId: string, data: { service?: string; password_hash?: string; notes?: string | null; }): Promise<void> {
+        await knex("passwords")
+            .where({
+                id: id,
+                user_id: userId
+            })
+            .update(data);
+    }
+
+    async deleteById(id: string, userId: string): Promise<boolean> {
+        const deletedRows = await knex("passwords")
+            .where({
+                id: id,
+                user_id: userId
+            }).delete();
+        return deletedRows > 0;
+    }
+    async findById(id: string, userId: string): Promise<Tables["passwords"] | undefined> {
+        const password = await knex("passwords")
+            .where({
+                id: id,
+                user_id: userId
+            })
+            .first();
+
+        return password;
+    }
     async findManyByUserId(userId: string): Promise<Tables["passwords"][]> {
         const passwords = await knex("passwords").where({
             user_id: userId,
         });
-        
+
         return passwords;
     }
     async create(data: { user_id: string; service: string; password_hash: string; notes?: string; }): Promise<Tables["passwords"]> {
@@ -17,6 +44,5 @@ export class KnexPasswordRepository implements NewPasswordRepository {
         }).returning("*");
         return password;
     }
-
 }
 

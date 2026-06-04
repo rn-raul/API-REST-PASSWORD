@@ -1,4 +1,4 @@
-import { NewPasswordRepository } from "../repositories/new-password-repository";
+import { PasswordsRepository } from "../repositories/passwords-repository";
 import { decrypt } from "../utils/crypto";
 
 
@@ -10,18 +10,21 @@ interface FetchUserPasswordsUseCaseResponse {
     passwords: {
         id: string;
         service: string;
-        password_hash: string;
+        password: string;
         notes: string | null;
     }[];
 }
-export class FetchUserPasswords {
-    constructor(private passwordRepository: NewPasswordRepository) { }
+export class FetchUserPasswordsUseCase {
+    constructor(private passwordRepository: PasswordsRepository) { }
     async execute({ userId }: FetchUserPasswordsUseCaseRequest): Promise<FetchUserPasswordsUseCaseResponse> {
         const passwords = await this.passwordRepository.findManyByUserId(userId);
+        if (!passwords) {
+            throw new Error("Password not found");
+        }
         const mappedPasswords = passwords.map(password => ({
             id: password.id,
             service: password.service,
-            password_hash: decrypt(password.password_hash),
+            password: decrypt(password.password_hash),
             notes: password.notes,
         }))
         return {
